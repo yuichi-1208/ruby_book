@@ -143,7 +143,7 @@ Product.log('Hello.')
 moduleで定義したメソッドをインスタンスメソッドとして使いたいなら -> include
 moduleで定義したメソッドをクラスメソッドとして使いたいなら -> extend
 
-以上までが大事なところ
+ここまでが大事なところ！
 
 
 
@@ -152,3 +152,159 @@ moduleで定義したメソッドをクラスメソッドとして使いたい�
 
 
 
+
+8.5 ミックスインについてもっと詳しく
+
+(4)
+------------------------------------------------------------------------------------------------
+module Loggable
+  def log(text)
+    puts "[LOG} #{text}"
+  end
+end
+
+class Product
+  include Loggable
+
+  def create_products(names)
+    log 'create_products is called'
+  end
+end
+
+Product.include?(Loggable)
+# => true
+
+Product.include_module
+# => [Loggabe, Kernel]
+
+Product.ancestors
+# => [Product, Loggable, Object, Kernel, BasicObect]
+
+------------------------------------------------------------------------------------------------
+
+
+include先のメソッドを使うモジュール
+
+(5)
+------------------------------------------------------------------------------------------------
+module Taggable
+  def price_tag
+    "#{price}円"
+  end
+end
+
+class Product
+  include Taggable
+
+  def price
+    1000
+  end
+end
+
+product = Product.new
+product.price_tag
+# => "1000円"
+------------------------------------------------------------------------------------------------
+
+Rubyには上記のような、include先のクラスに特定のメソッドがあると過程して成り立っているモジュールがいくつかある。↓
+（例えば(5)のコードでは、productクラスにpriceメソッドがあると仮定してTaggabeモジュールが成り立っている。）
+  ①Enumerable
+  ②Comparable
+  ③Kernel
+
+
+① Enumerableモジュール → [ map, select, find, count ]
+
+  ・ハッシュ、配列、範囲などの繰り返し処理ができるクラスにincludeされているモジュール
+  ・include先のクラスにeachメソッドがあれば使えるモジュール
+
+
+② Comparebleモジュール → [ <, <=, ==, >, >=, between?]
+
+  ・文字列や数値などの <=>演算子が実装されているクラスにincludeされているモジュール
+  ・include先のクラスに <=>メソッドがあれば使えるメソッド
+
+
+③Kernelモジュール → [ puts, p, print, require, loop ]
+
+  ・最強のモジュール
+  ・全クラスの頂点にいるObjectクラスがKernelモジュールをincludeしているから、
+    Objectクラスを継承している全てのクラスがkernelモジュールを使えるようになる。
+
+(6)
+------------------------------------------------------------------------------------------------
+class Object
+  include Kernel
+  # 省略
+end
+
+class String < Object
+  # 省略
+end
+
+class User < Object
+  # 省略
+end
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+p301 8.5.7
+クラスやモジュール自身もオブジェクト（インスタンス）
+→オブジェクト（インスタンス）であるということは、設計図であるclassが存在するということ。
+→クラスやモジュールも、何かしらのクラスからインスタンス化されたものである。
+  （多分Classクラスをインスタンス化したもの。）
+
+
+(7)
+------------------------------------------------------------------------------------------------
+class Object
+  include Kernel
+  # 省略
+end
+
+class Module < Object
+  # 省略
+end
+
+class Class < Module
+  # 省略
+end
+
+class User < Object
+  # 省略
+end
+------------------------------------------------------------------------------------------------
+
+(8)
+------------------------------------------------------------------------------------------------
+class User
+  # 省略
+end
+
+User.class
+# => Class
+
+Class.superclass
+# => Module
+
+Module.superclass
+# => Object
+
+
+
+ちなみに、どんなクラスも最終的にClassクラスのオブジェクトになります。
+Class.class
+# => Class
+
+Module.class
+# => Class
+
+Object.class
+# => Class
+------------------------------------------------------------------------------------------------
